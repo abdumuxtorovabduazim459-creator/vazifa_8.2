@@ -1,71 +1,47 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import  ListCreateAPIView, RetrieveUpdateDestroyAPIView
 
 from .models import Genre, Book
 from .serializers import GenreSerializer, BookSerializer
 
+class GenreListCreateAPIView(ListCreateAPIView):
 
-class GenreListCreateAPIView(APIView):
-    def get(self, request):
-        genres = Genre.objects.all()
-        serializer = GenreSerializer(genres, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Genre.objects.all()
 
-    def post(self, request):
-        serializer = GenreSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def get_serializer_class(self):
+        return GenreSerializer
 
 
-class GenreDetailAPIView(APIView):
-    def get(self, request, pk):
-        genre = get_object_or_404(Genre, pk=pk)
-        serializer = GenreSerializer(genre)
-        return Response(serializer.data)
+class GenreRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    lookup_field = "pk"
+    lookup_url_kwarg = "genre_id"
 
-    def put(self, request, pk):
-        genre = get_object_or_404(Genre, pk=pk)
-        serializer = GenreSerializer(genre, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Genre.objects.all()
 
-    def delete(self, request, pk):
-        genre = get_object_or_404(Genre, pk=pk)
-        genre.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_serializer_class(self):
+        return GenreSerializer
 
 
-class BookListCreateAPIView(APIView):
-    def get(self, request):
-        books = Book.objects.all()
-        serializer = BookSerializer(books, many=True)
-        return Response(serializer.data)
+class BookListCreateAPIView(ListCreateAPIView):
 
-    def post(self, request):
-        serializer = BookSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def get_queryset(self):
+        genre_id = self.kwargs.get("genre_id")
+        books = Book.objects.select_related("genre")
+        if genre_id:
+            books = books.filter(genre_id=genre_id)
+        return books
+
+    def get_serializer_class(self):
+        return BookSerializer
 
 
-class BookDetailAPIView(APIView):
-    def get(self, request, pk):
-        book = get_object_or_404(Book, pk=pk)
-        serializer = BookSerializer(book)
-        return Response(serializer.data)
+class BookRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    lookup_field = "pk"
+    lookup_url_kwarg = "book_id"
 
-    def put(self, request, pk):
-        book = get_object_or_404(Book, pk=pk)
-        serializer = BookSerializer(book, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+    def get_queryset(self):
+        return Book.objects.select_related("genre")
 
-    def delete(self, request, pk):
-        book = get_object_or_404(Book, pk=pk)
-        book.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_serializer_class(self):
+        return BookSerializer
