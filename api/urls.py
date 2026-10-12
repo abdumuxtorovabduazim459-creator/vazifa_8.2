@@ -1,13 +1,11 @@
 from django.urls import path
 
-from .views import (GenreListCreateAPIView, GenreRetrieveUpdateDestroyAPIView,
-                    BookListCreateAPIView, BookRetrieveUpdateDestroyAPIView)
+from .views import GenreListAPIView, BookListAPIView, GenreDetailAPIView
 
 
 urlpatterns = [
-    path('genres/', GenreListCreateAPIView.as_view()),
-    path('genres/<int:genre_id>/', GenreRetrieveUpdateDestroyAPIView.as_view()),
-    path('books/', BookListCreateAPIView.as_view()),
-    path('books/genre/<int:genre_id>/', BookListCreateAPIView.as_view()),
-    path('books/<int:book_id>/', BookRetrieveUpdateDestroyAPIView.as_view()),
+    path('genres/', GenreListAPIView.as_view()),
+    path('genres/<int:genre_id>', GenreDetailAPIView.as_view()),
+    path('books/', BookListAPIView.as_view()),
+    path('books/<int:genre_id>', BookListAPIView.as_view()),
 ]
